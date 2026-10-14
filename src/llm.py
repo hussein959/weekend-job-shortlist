@@ -9,7 +9,7 @@ import json
 import re
 import time
 
-from openai import OpenAI
+from openai import AuthenticationError, BadRequestError, NotFoundError, OpenAI, PermissionDeniedError
 
 from .common import env, log
 
@@ -30,13 +30,15 @@ class LLM:
         last_err = None
         for attempt in range(4):
             try:
+                # No temperature: some current models reject it, and the defaults are fine here.
                 resp = self.client.chat.completions.create(
                     model=model or self.model,
                     max_tokens=max_tokens,
-                    temperature=0.2,
                     messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
                 )
                 return parse_json(resp.choices[0].message.content or "")
+            except (BadRequestError, AuthenticationError, PermissionDeniedError, NotFoundError) as e:
+                raise RuntimeError(f"LLM request rejected (not retried): {e}") from None
             except Exception as e:
                 last_err = e
                 wait = 5 * 2 ** attempt

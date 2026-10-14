@@ -23,6 +23,7 @@ def main() -> None:
     ap.add_argument("--no-email", action="store_true", help="write files but do not send email")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
+    logging.getLogger("pypdf").setLevel(logging.ERROR)  # harmless font-map warnings
 
     try:
         from dotenv import load_dotenv  # local runs only
@@ -56,6 +57,10 @@ def main() -> None:
     cv_text = load_cv()
     llm = LLM()
     all_matches = screen_all(llm, candidates, cv_text, cfg)
+    if candidates and not any(j.match for j in candidates):
+        # Fail the run (GitHub then emails a failure notice) instead of sending a
+        # misleading "no matches" shortlist. Nothing is marked as seen.
+        raise SystemExit("Every screening call failed; check the LLM secrets and the log above.")
     matches = all_matches[: cfg["matching"]["max_applications"]]
     tailor_model = llm.model_for(cfg["models"]["tailoring"])
     log.info("%d strong matches; tailoring %d with %s model (%s)",
