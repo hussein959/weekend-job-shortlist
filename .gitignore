@@ -1,0 +1,9 @@
+.env
+output/
+state/
+__pycache__/
+.venv/
+# Never commit a CV: it is loaded from the CV_URL secret.
+cv/
+*.pdf
+*.docx

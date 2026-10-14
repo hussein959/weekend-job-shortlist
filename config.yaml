@@ -1,0 +1,106 @@
+# Daily job-application assistant: search, matching and output settings.
+# Secrets (API keys, email password, CV location) are NOT stored here; they come
+# from environment variables / GitHub Actions secrets. See README.md.
+
+candidate:
+  # Used by the matcher to judge location / visa eligibility of each role.
+  based_in: "Iraq"
+  open_to_relocation: true
+  open_to_remote: true
+  target_titles:
+    - Backend Developer
+    - .NET Developer
+    - C# Developer
+    - Mobile Developer
+    - Flutter Developer
+    - Software Engineer
+
+search:
+  # Only jobs posted within this many days are considered (when the source gives a date).
+  # 7 covers the full week between weekend runs.
+  max_age_days: 7
+  # Any job whose location contains one of these terms is dropped.
+  exclude_locations:
+    - iraq
+    - baghdad
+    - erbil
+    - basra
+    - basrah
+    - mosul
+    - sulaymaniyah
+    - sulaimani
+    - najaf
+    - karbala
+    - kirkuk
+    - duhok
+  # Titles containing any of these are dropped before matching.
+  exclude_title_terms:
+    - intern
+    - internship
+    - recruiter
+    - sales
+  # Free-text queries used by sources that support search.
+  queries:
+    - ".NET developer"
+    - "C# developer"
+    - "ASP.NET Core"
+    - "Flutter developer"
+    - "Dart Flutter"
+    - "backend developer .NET"
+  # Tags for the Jobicy remote-jobs API.
+  jobicy_tags: ["flutter", "dotnet", "csharp", "backend"]
+  # Optional sources (only used if their API keys are set as secrets).
+  adzuna:
+    # Adzuna country codes: at au be br ca ch de es fr gb in it mx nl nz pl sg us za
+    countries: ["gb", "de", "nl", "ca", "au", "us", "pl", "sg"]
+    what_or: "dotnet .net c# csharp asp.net flutter dart"
+  jsearch:
+    # JSearch (Google for Jobs aggregator: LinkedIn, Indeed, Glassdoor...). Free tier is
+    # ~200 requests/month, so keep this list short (each query = 1 request per run).
+    queries:
+      - ".NET C# backend developer"
+      - "Flutter developer"
+    date_posted: "week"    # all | today | 3days | week | month
+
+# Cheap keyword pre-filter that runs before the LLM, so only plausible jobs cost tokens.
+# A job's score = sum(weight) for each pattern found in the description,
+# plus title_multiplier * weight for each pattern found in the title.
+prefilter:
+  title_multiplier: 3
+  min_score: 4
+  # At most this many jobs per run are sent to the LLM for screening.
+  max_candidates: 20
+  skills:
+    - {name: ".NET",        pattern: '(?<![a-z])\.net\b|dotnet|asp\.net', weight: 3, core: true}
+    - {name: "C#",          pattern: '(?<![a-z])c#|csharp|c-sharp',         weight: 3, core: true}
+    - {name: "Flutter",     pattern: '\bflutter\b',                          weight: 3, core: true}
+    - {name: "Dart",        pattern: '\bdart\b',                             weight: 2, core: true}
+    - {name: "PostgreSQL",  pattern: 'postgres',                             weight: 1}
+    - {name: "PostGIS",     pattern: 'postgis|\bgis\b|geospatial',           weight: 2}
+    - {name: "MongoDB",     pattern: 'mongo',                                weight: 1}
+    - {name: "Entity Framework", pattern: 'entity framework|\bef core\b',    weight: 1}
+    - {name: "REST/API",    pattern: '\brest\b|\bapi\b|graphql',             weight: 0.5}
+    - {name: "Mobile",      pattern: '\bmobile\b|\bios\b|\bandroid\b',       weight: 0.5}
+    - {name: "Backend",     pattern: 'back-?end',                            weight: 0.5}
+
+matching:
+  # LLM score (0-100) a job must reach to be shortlisted.
+  min_score: 65
+  # Share of the job's listed requirements you must meet ("yes" = 1, "partial" = 0.5).
+  min_requirement_ratio: 0.5
+  # Maximum tailored CVs per run (extra matches carry over to the next run).
+  max_applications: 2
+  # Parallel LLM calls during screening.
+  workers: 4
+
+models:
+  # Screening always uses the cheap model (LLM_SCREEN_MODEL).
+  # CV tailoring and its fact-check use the model chosen here:
+  #   cheap  -> LLM_SCREEN_MODEL (lower cost)
+  #   strong -> LLM_MODEL        (higher quality)
+  tailoring: strong
+
+email:
+  subject_prefix: "Weekend job shortlist"
+  # Send an email even when nothing matched on a run.
+  send_when_empty: true
