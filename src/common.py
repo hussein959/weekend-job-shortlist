@@ -22,6 +22,17 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
+REGIONS = ("outside_iraq", "iraq_only")
+
+
+def job_region() -> str:
+    """Which jobs to look for: JOB_REGION=outside_iraq (default) or iraq_only."""
+    region = (os.environ.get("JOB_REGION", "").strip().lower() or "outside_iraq").replace("-", "_")
+    if region not in REGIONS:
+        raise SystemExit(f"JOB_REGION must be one of {', '.join(REGIONS)}; got {region!r}")
+    return region
+
+
 def env(name: str, default: Optional[str] = None, required: bool = False) -> Optional[str]:
     value = os.environ.get(name, "").strip() or default
     if required and not value:

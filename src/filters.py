@@ -5,7 +5,7 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Iterable, List
 
-from .common import Job
+from .common import Job, job_region
 
 
 def dedupe(jobs: Iterable[Job]) -> List[Job]:
@@ -18,9 +18,15 @@ def dedupe(jobs: Iterable[Job]) -> List[Job]:
     return list(best.values())
 
 
-def is_excluded_location(job: Job, cfg) -> bool:
+def in_iraq(job: Job, cfg) -> bool:
     loc = (job.location or "").lower()
-    return any(re.search(rf"\b{re.escape(t)}\b", loc) for t in cfg["search"]["exclude_locations"])
+    return any(re.search(rf"\b{re.escape(t)}\b", loc) for t in cfg["search"]["iraq_locations"])
+
+
+def is_excluded_location(job: Job, cfg) -> bool:
+    if job_region() == "iraq_only":
+        return not in_iraq(job, cfg)
+    return in_iraq(job, cfg)
 
 
 def is_excluded_title(job: Job, cfg) -> bool:

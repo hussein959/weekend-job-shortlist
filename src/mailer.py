@@ -48,7 +48,7 @@ def build_email(date: str, packages: List[Tuple[Job, Path, List[str], str]], sta
         cards = '<p>No roles passed the match threshold on this run. The search runs again next Saturday/Sunday.</p>'
     body = f"""<html><body style="font-family:Segoe UI,Arial,sans-serif;max-width:720px;margin:auto;color:#222">
 <h2 style="color:#1f3a5f;margin-bottom:4px">Your job shortlist · {e(date)}</h2>
-<p style="color:#666;margin-top:0">{stats['fetched']} postings found · {stats['candidates']} screened in depth · {stats['matches']} strong matches · {len(packages)} tailored CVs below{carry}.
+<p style="color:#666;margin-top:0">{e(stats['region'])} · {stats['fetched']} postings found · {stats['candidates']} screened in depth · {stats['matches']} strong matches · {len(packages)} tailored CVs below{carry}.
 Each CV was tailored only from your master CV and fact-checked; please still read it before applying.</p>
 {cards}
 <p style="color:#999;font-size:12px">Generated automatically. Nothing has been submitted on your behalf.</p>

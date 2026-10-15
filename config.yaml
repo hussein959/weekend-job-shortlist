@@ -19,8 +19,11 @@ search:
   # Only jobs posted within this many days are considered (when the source gives a date).
   # 7 covers the full week between weekend runs.
   max_age_days: 7
-  # Any job whose location contains one of these terms is dropped.
-  exclude_locations:
+  # Location terms that identify a job as being in Iraq. The JOB_REGION setting
+  # (.env / repository variable) decides what to do with them:
+  #   outside_iraq (default): drop jobs whose location matches any term
+  #   iraq_only:              keep ONLY jobs whose location matches a term
+  iraq_locations:
     - iraq
     - baghdad
     - erbil

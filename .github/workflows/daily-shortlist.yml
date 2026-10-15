@@ -41,6 +41,8 @@ jobs:
       - name: Build and email shortlist
         run: python -m src.main
         env:
+          # Repository *variable* (not a secret): outside_iraq (default) or iraq_only.
+          JOB_REGION: ${{ vars.JOB_REGION }}
           CV_URL: ${{ secrets.CV_URL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}

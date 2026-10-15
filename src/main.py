@@ -9,9 +9,10 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 from datetime import date
 
-from .common import ROOT, load_config, log, slugify
+from .common import ROOT, job_region, load_config, log, slugify
 from .filters import dedupe, is_excluded_location, is_excluded_title, is_fresh, prefilter
 from .sources import fetch_all
 from .state import Seen
@@ -32,6 +33,11 @@ def main() -> None:
         pass
 
     cfg = load_config()
+    region = job_region()
+    log.info("Job region: %s", region.replace("_", " "))
+    if region == "iraq_only" and not os.environ.get("JSEARCH_API_KEY"):
+        log.warning("JOB_REGION=iraq_only works best with JSEARCH_API_KEY: the free job boards list "
+                    "almost no jobs located in Iraq.")
     today = date.today().isoformat()
     seen = Seen()
 
@@ -81,7 +87,8 @@ def main() -> None:
              "match": job.match, "warnings": warnings, "cv": cv}, indent=2, ensure_ascii=False))
         packages.append((job, path, warnings, cv.get("tailoring_notes", "")))
 
-    stats = {"fetched": len(raw), "candidates": len(candidates), "matches": len(all_matches)}
+    stats = {"fetched": len(raw), "candidates": len(candidates), "matches": len(all_matches),
+             "region": "Jobs in Iraq only" if region == "iraq_only" else "Jobs outside Iraq"}
     html_body, text_body = build_email(today, packages, stats)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "shortlist.html").write_text(html_body, encoding="utf-8")

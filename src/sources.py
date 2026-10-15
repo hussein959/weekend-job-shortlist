@@ -10,7 +10,7 @@ from typing import Callable, List
 
 import requests
 
-from .common import Job, env, html_to_text, log, parse_dt
+from .common import Job, env, html_to_text, job_region, log, parse_dt
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; personal-job-shortlist/1.0)"}
 TIMEOUT = 30
@@ -124,8 +124,8 @@ def fetch_himalayas(cfg) -> List[Job]:
 
 def fetch_adzuna(cfg) -> List[Job]:
     app_id, app_key = env("ADZUNA_APP_ID"), env("ADZUNA_APP_KEY")
-    if not (app_id and app_key):
-        return []
+    if not (app_id and app_key) or job_region() == "iraq_only":
+        return []  # Adzuna does not cover Iraq
     a = cfg["search"]["adzuna"]
     jobs = []
     for country in a["countries"]:
@@ -162,11 +162,16 @@ def fetch_jsearch(cfg) -> List[Job]:
     js = cfg["search"]["jsearch"]
     headers = {"X-RapidAPI-Key": key, "X-RapidAPI-Host": "jsearch.p.rapidapi.com"}
     jobs = []
+    iraq = job_region() == "iraq_only"
     for q in js["queries"]:
+        params = {"query": f"{q} in Iraq" if iraq else q, "page": 1, "num_pages": 1,
+                  "date_posted": js.get("date_posted", "week")}
+        if iraq:
+            params["country"] = "iq"
         try:
             data = _get(
                 "https://jsearch.p.rapidapi.com/search", headers=headers,
-                params={"query": q, "page": 1, "num_pages": 1, "date_posted": js.get("date_posted", "week")},
+                params=params,
             )
         except Exception as e:
             log.warning("JSearch '%s' failed: %s", q, e)

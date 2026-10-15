@@ -39,6 +39,20 @@ This repository is **public**, so GitHub Actions minutes are free. Your CV, keys
 
 4. Go to **Actions → Weekend job shortlist → Run workflow** to test it once (manual runs work on any day). After that it runs every Saturday and Sunday on its own.
 
+## Choosing the region
+
+The `JOB_REGION` setting chooses where to look:
+
+| Value | Jobs kept |
+|---|---|
+| `outside_iraq` (default) | Every country except Iraq, including remote roles |
+| `iraq_only` | Only jobs located in Iraq (Baghdad, Erbil, Basra, ...) |
+
+- **Local runs:** set `JOB_REGION=...` in your `.env`.
+- **GitHub runs:** go to Settings → Secrets and variables → Actions → **Variables** tab and add a repository variable named `JOB_REGION`. It is not a secret.
+
+The free job boards list almost no jobs located in Iraq. For `iraq_only`, add a `JSEARCH_API_KEY`: JSearch then searches Google Jobs (LinkedIn, Bayt, company sites) in Iraq. The cities counted as Iraq are the `iraq_locations` list in `config.yaml`.
+
 ## Tuning
 
 Everything is in [`config.yaml`](config.yaml). The main cost settings:
