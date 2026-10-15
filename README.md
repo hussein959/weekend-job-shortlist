@@ -69,12 +69,30 @@ Who can use the secrets: only runs started by the schedule or by someone with wr
 ## Local run
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
+git clone https://github.com/hussein959/weekend-job-shortlist.git
+cd weekend-job-shortlist
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env   # fill it in (CV_URL, or CV_PATH to a file outside this folder)
 python -m src.main --dry-run    # search + pre-filter only, no keys needed
-python -m src.main --no-email   # full run, files written to output/<date>/
+python -m src.main --no-email   # full run, files written to output/<date>/ (not emailed)
+python -m src.main              # full run and email
 ```
+
+`.env` is ignored by git, so local keys and settings never reach the repository.
+
+### Using a local AI agent instead of an API key
+
+If a command-line AI agent is installed and signed in on your machine, local runs can use it instead of an API key:
+
+```ini
+LLM_BACKEND=cli
+LLM_CLI_COMMAND=<agent command in non-interactive mode, with tools disabled> --model {model}
+LLM_SCREEN_MODEL=<cheap model name>
+LLM_MODEL=<strong model name>
+```
+
+Each prompt is sent to the command on stdin, and the command runs in an empty temporary folder. This works only on your machine. The scheduled GitHub run still uses `LLM_BACKEND=api` and the repository secrets.
 
 ## Notes
 
