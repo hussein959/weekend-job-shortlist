@@ -6,6 +6,7 @@ LinkedIn / Indeed / Glassdoor / company sites).
 """
 from __future__ import annotations
 
+from collections import Counter
 from typing import Callable, List
 
 import requests
@@ -155,28 +156,48 @@ def fetch_adzuna(cfg) -> List[Job]:
     return jobs
 
 
+JSEARCH_HOST = "jsearch.p.rapidapi.com"
+# /search-v2 is the current search endpoint; /search is the older one. The first
+# path that does not return 404 is used for the rest of the run.
+JSEARCH_PATHS = ("/search-v2", "/search")
+
+
 def fetch_jsearch(cfg) -> List[Job]:
     key = env("JSEARCH_API_KEY")
     if not key:
         return []
     js = cfg["search"]["jsearch"]
-    headers = {"X-RapidAPI-Key": key, "X-RapidAPI-Host": "jsearch.p.rapidapi.com"}
+    headers = {"X-RapidAPI-Key": key, "X-RapidAPI-Host": JSEARCH_HOST}
     jobs = []
     iraq = job_region() == "iraq_only"
+    paths = list(JSEARCH_PATHS)
     for q in js["queries"]:
-        params = {"query": f"{q} in Iraq" if iraq else q, "page": 1, "num_pages": 1,
+        params = {"query": f"{q} in Iraq" if iraq else q, "num_pages": 1,
                   "date_posted": js.get("date_posted", "week")}
         if iraq:
             params["country"] = "iq"
-        try:
-            data = _get(
-                "https://jsearch.p.rapidapi.com/search", headers=headers,
-                params=params,
-            )
-        except Exception as e:
-            log.warning("JSearch '%s' failed: %s", q, e)
+        data = None
+        while paths:
+            try:
+                data = _get(f"https://{JSEARCH_HOST}{paths[0]}", headers=headers, params=params)
+                break
+            except requests.HTTPError as e:
+                status = e.response.status_code if e.response is not None else "?"
+                if status == 404 and len(paths) > 1:
+                    log.info("JSearch %s not found; trying %s", paths[0], paths[1])
+                    paths.pop(0)
+                    continue
+                log.warning("JSearch '%s' failed: HTTP %s on %s", q, status, paths[0])
+                break
+            except Exception as e:
+                log.warning("JSearch '%s' failed: %s", q, type(e).__name__)
+                break
+        if data is None:
             continue
-        for j in data.get("data", []):
+        # /search-v2 returns {"data": {"jobs": [...]}}; /search returns {"data": [...]}.
+        payload = data.get("data") or []
+        items = payload.get("jobs", []) if isinstance(payload, dict) else payload
+        for j in items:
             loc = ", ".join(x for x in (j.get("job_city"), j.get("job_state"), j.get("job_country")) if x)
             if j.get("job_is_remote"):
                 loc = f"{loc} (Remote)".strip()
@@ -189,6 +210,9 @@ def fetch_jsearch(cfg) -> List[Job]:
                 description=j.get("job_description") or "",
                 posted_at=parse_dt(j.get("job_posted_at_datetime_utc")),
             ))
+    if jobs:
+        publishers = Counter(j.source.split("/", 1)[1] for j in jobs)
+        log.info("JSearch publishers: %s", ", ".join(f"{p} {n}" for p, n in publishers.most_common()))
     return jobs
 
 
