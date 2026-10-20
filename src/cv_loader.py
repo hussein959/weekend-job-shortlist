@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import io
 import re
+import unicodedata
 from pathlib import Path
 
 import requests
@@ -35,11 +36,26 @@ def _direct_link(url: str) -> str:
     return url
 
 
+# Arabic "presentation form" glyphs (U+FB50-U+FDFF, U+FE70-U+FEFF). PDF text that uses
+# them was extracted in visual order: words of each line come out right-to-left.
+_PRESENTATION_FORMS = re.compile("[\ufb50-\ufdff\ufe70-\ufefe]")
+
+
+def _fix_arabic(text: str) -> str:
+    """Turn visually ordered Arabic PDF text into normal (logical) Arabic text."""
+    lines = []
+    for line in text.split("\n"):
+        if _PRESENTATION_FORMS.search(line):
+            line = " ".join(reversed(unicodedata.normalize("NFKC", line).split()))
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def _extract(data: bytes, name: str) -> str:
     name = name.lower()
     if data[:4] == b"%PDF" or name.endswith(".pdf"):
         from pypdf import PdfReader
-        return "\n".join(p.extract_text() or "" for p in PdfReader(io.BytesIO(data)).pages)
+        return _fix_arabic("\n".join(p.extract_text() or "" for p in PdfReader(io.BytesIO(data)).pages))
     if data[:2] == b"PK" or name.endswith(".docx"):
         from docx import Document
         doc = Document(io.BytesIO(data))

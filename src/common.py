@@ -17,8 +17,17 @@ ROOT = Path(__file__).resolve().parent.parent
 log = logging.getLogger("jobs")
 
 
+def config_path() -> Path:
+    """The search profile: CONFIG_FILE (relative to the project folder) or config.yaml."""
+    path = Path(os.environ.get("CONFIG_FILE", "").strip() or "config.yaml")
+    return path if path.is_absolute() else ROOT / path
+
+
 def load_config() -> dict:
-    with open(ROOT / "config.yaml", encoding="utf-8") as f:
+    path = config_path()
+    if not path.exists():
+        raise SystemExit(f"CONFIG_FILE not found: {path}")
+    with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 

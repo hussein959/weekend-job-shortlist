@@ -12,7 +12,7 @@ import logging
 import os
 from datetime import date
 
-from .common import ROOT, job_region, load_config, log, slugify
+from .common import ROOT, config_path, job_region, load_config, log, slugify
 from .filters import dedupe, is_excluded_location, is_excluded_title, is_fresh, prefilter
 from .sources import fetch_all
 from .state import Seen
@@ -34,7 +34,7 @@ def main() -> None:
 
     cfg = load_config()
     region = job_region()
-    log.info("Job region: %s", region.replace("_", " "))
+    log.info("Search profile: %s · job region: %s", config_path().name, region.replace("_", " "))
     if region == "iraq_only" and not os.environ.get("JSEARCH_API_KEY"):
         log.warning("JOB_REGION=iraq_only works best with JSEARCH_API_KEY: the free job boards list "
                     "almost no jobs located in Iraq.")

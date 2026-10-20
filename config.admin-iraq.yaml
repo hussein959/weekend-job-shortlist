@@ -1,0 +1,81 @@
+# Search profile: administration, accounting, warehouse and medical-equipment roles in Iraq.
+# Use it with CONFIG_FILE=config.admin-iraq.yaml and JOB_REGION=iraq_only in .env.
+# Same structure as config.yaml; see that file for what each setting does.
+
+candidate:
+  based_in: "Iraq"
+  open_to_relocation: false
+  open_to_remote: true
+  target_titles:
+    - Accountant
+    - Warehouse / Inventory Keeper
+    - Administrative Officer
+    - Office Administrator
+    - Field Administrator
+    - Medical Equipment Technician
+    - Data Entry / Office Clerk
+
+search:
+  max_age_days: 7
+  iraq_locations:
+    - iraq
+    - baghdad
+    - erbil
+    - basra
+    - basrah
+    - mosul
+    - sulaymaniyah
+    - sulaimani
+    - najaf
+    - karbala
+    - kirkuk
+    - duhok
+  exclude_title_terms:
+    - intern
+    - internship
+    - recruiter
+  queries:
+    - "accountant"
+    - "warehouse keeper"
+    - "administrative officer"
+    - "medical equipment technician"
+  jobicy_tags: []
+  adzuna:
+    countries: []        # Adzuna does not cover Iraq
+    what_or: ""
+  jsearch:
+    # Each query = 1 JSearch request per run (free plan: ~200 requests/month).
+    # With JOB_REGION=iraq_only, " in Iraq" is added to each query.
+    queries:
+      - "accountant"
+      - "warehouse inventory keeper"
+      - "administrative officer"
+      - "medical equipment technician"
+    date_posted: "week"
+
+prefilter:
+  title_multiplier: 3
+  min_score: 3
+  max_candidates: 20
+  skills:
+    - {name: "Accounting",   pattern: 'accountant|accounting|bookkeep|finance|محاسب',                         weight: 3, core: true}
+    - {name: "Warehouse",    pattern: 'warehouse|inventory|store ?keeper|stock|logistics|مخزن|مخازن|جرد',       weight: 3, core: true}
+    - {name: "Admin",        pattern: 'administrat|admin\b|office (manager|assistant|coordinator)|secretary|إداري|اداري', weight: 3, core: true}
+    - {name: "Medical eq.",  pattern: 'medical (equipment|device)|biomedical|اجهزة طبية|أجهزة طبية',           weight: 3, core: true}
+    - {name: "Data entry",   pattern: 'data entry|clerk|ادخال بيانات|إدخال بيانات',                           weight: 2, core: true}
+    - {name: "Field team",   pattern: 'field (officer|coordinator|supervisor)|supervisor|team lead|ميداني',     weight: 1}
+    - {name: "Office tools", pattern: 'excel|ms office|microsoft office|word\b|اكسل|اوفيس',                     weight: 1}
+    - {name: "Sales",        pattern: '\bsales\b|مبيعات',                                                      weight: 0.5}
+
+matching:
+  min_score: 65
+  min_requirement_ratio: 0.5
+  max_applications: 2
+  workers: 4
+
+models:
+  tailoring: strong
+
+email:
+  subject_prefix: "Admin & accounting job shortlist (Iraq)"
+  send_when_empty: true

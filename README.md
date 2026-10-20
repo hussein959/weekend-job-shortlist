@@ -53,6 +53,17 @@ The `JOB_REGION` setting chooses where to look:
 
 The free job boards list almost no jobs located in Iraq. For `iraq_only`, add a `JSEARCH_API_KEY`: JSearch then searches Google Jobs (LinkedIn, Bayt, company sites) in Iraq. The cities counted as Iraq are the `iraq_locations` list in `config.yaml`.
 
+## Search profiles
+
+`config.yaml` is the default profile (backend and mobile developer roles). To search for a different kind of role, point `CONFIG_FILE` at another profile file:
+
+| Profile | Roles |
+|---|---|
+| `config.yaml` (default) | .NET / C# backend and Flutter mobile developer |
+| `config.admin-iraq.yaml` | Accounting, warehouse/inventory, administration, medical-equipment technician (use with `JOB_REGION=iraq_only`) |
+
+Each profile keeps its own list of jobs already seen. CVs are tailored in the same language as the master CV, so an Arabic CV stays Arabic.
+
 ## Tuning
 
 Everything is in [`config.yaml`](config.yaml). The main cost settings:

@@ -52,6 +52,7 @@ SCREENING NOTES (what matched, what to emphasise, gaps)
 {notes}
 
 Tailor the CV for this job. Hard rules:
+- Write the CV in the same language as the master CV (do not translate it).
 - Use ONLY facts present in the master CV. Never add employers, job titles, dates,
   degrees, certifications, technologies, metrics, numbers, team sizes or achievements
   that are not stated there. Do not upgrade skill levels or years of experience.
