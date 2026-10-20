@@ -199,6 +199,8 @@ def fetch_jsearch(cfg) -> List[Job]:
         items = payload.get("jobs", []) if isinstance(payload, dict) else payload
         for j in items:
             loc = ", ".join(x for x in (j.get("job_city"), j.get("job_state"), j.get("job_country")) if x)
+            if not loc and iraq:
+                loc = "Iraq"  # the search was limited to Iraq (country=iq)
             if j.get("job_is_remote"):
                 loc = f"{loc} (Remote)".strip()
             jobs.append(Job(

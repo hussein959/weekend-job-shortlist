@@ -30,6 +30,19 @@ search:
     - karbala
     - kirkuk
     - duhok
+    - kurdistan region
+    - iq                 # country code, e.g. "Baghdad, IQ"
+    - العراق
+    - بغداد
+    - أربيل
+    - اربيل
+    - البصرة
+    - الموصل
+    - السليمانية
+    - النجف
+    - كربلاء
+    - كركوك
+    - دهوك
   exclude_title_terms:
     - intern
     - internship
