@@ -81,7 +81,7 @@ prefilter:
     - {name: "Sales",        pattern: '\bsales\b|مبيعات',                                                      weight: 0.5}
 
 matching:
-  min_score: 65
+  min_score: 60          # lower than the developer profile: his CV is short, so scores run lower
   min_requirement_ratio: 0.5
   max_applications: 2
   workers: 4
