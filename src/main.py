@@ -59,9 +59,11 @@ def main() -> None:
     from .matcher import screen_all
     from .render import render_docx
     from .tailor import tailor_cv
+    from .translate import prepare_master_cv
 
     cv_text = load_cv()
     llm = LLM()
+    cv_text = prepare_master_cv(llm, cfg, cv_text, llm.model_for(cfg["models"]["tailoring"]))
     all_matches = screen_all(llm, candidates, cv_text, cfg)
     if candidates and not any(j.match for j in candidates):
         # Fail the run (GitHub then emails a failure notice) instead of sending a

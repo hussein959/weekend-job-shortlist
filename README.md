@@ -62,7 +62,9 @@ The free job boards list almost no jobs located in Iraq. For `iraq_only`, add a 
 | `config.yaml` (default) | .NET / C# backend and Flutter mobile developer |
 | `config.admin-iraq.yaml` | Accounting, warehouse/inventory, administration, medical-equipment technician (use with `JOB_REGION=iraq_only`) |
 
-Each profile keeps its own list of jobs already seen. CVs are tailored in the same language as the master CV, so an Arabic CV stays Arabic.
+Each profile keeps its own list of jobs already seen.
+
+By default, CVs are tailored in the master CV's language. A profile can set `cv_language: english` instead. A non-English master CV is then translated faithfully to English once (and cached), and that translation is used for screening, tailoring and every fact-check.
 
 ## Tuning
 

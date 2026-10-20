@@ -109,6 +109,12 @@ matching:
   # Parallel LLM calls during screening.
   workers: 4
 
+# Language of the tailored CVs:
+#   same    -> the master CV's language
+#   english -> a non-English master CV is first translated faithfully to English (cached),
+#              and that translation is used for screening, tailoring and all fact-checks
+cv_language: same
+
 models:
   # Screening always uses the cheap model (LLM_SCREEN_MODEL).
   # CV tailoring and its fact-check use the model chosen here:

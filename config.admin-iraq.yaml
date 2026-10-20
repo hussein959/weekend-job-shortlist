@@ -86,6 +86,8 @@ matching:
   max_applications: 2
   workers: 4
 
+cv_language: english   # his master CV is Arabic; tailored CVs are written in English
+
 models:
   tailoring: strong
 
