@@ -120,3 +120,5 @@ email:
   subject_prefix: "Weekend job shortlist"
   # Send an email even when nothing matched on a run.
   send_when_empty: true
+  # Also list every other screened job (score, link, why, gaps) below the tailored CVs.
+  include_all_screened: false

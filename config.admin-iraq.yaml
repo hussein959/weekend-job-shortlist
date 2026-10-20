@@ -92,3 +92,4 @@ models:
 email:
   subject_prefix: "Admin & accounting job shortlist (Iraq)"
   send_when_empty: true
+  include_all_screened: true   # list every screened job, not only the strong matches

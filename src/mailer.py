@@ -40,7 +40,26 @@ def _card(i: int, job: Job, cv_file: str, warnings: List[str], notes: str) -> st
 </div>"""
 
 
-def build_email(date: str, packages: List[Tuple[Job, Path, List[str], str]], stats: dict) -> Tuple[str, str]:
+def _others(jobs: List[Job]) -> str:
+    """Compact list of screened jobs that did not get a tailored CV."""
+    rows = []
+    for j in jobs:
+        m = j.match
+        gaps = ", ".join(m.get("gaps") or [])
+        rows.append(f"""
+<div style="border-top:1px solid #eee;padding:10px 0">
+  <div><span style="display:inline-block;min-width:42px;font-weight:600;color:#1f3a5f">{e(str(m.get('score')))}%</span>
+    <a href="{e(j.url)}" style="color:#1f3a5f;font-weight:600">{e(j.title)}</a> · {e(j.company)} · {e(j.location)}</div>
+  <div style="font-size:13px;color:#444;margin:4px 0 0 42px">{e(m.get('why_match', ''))}</div>
+  <div style="font-size:12px;color:#888;margin:2px 0 0 42px">Gaps: {e(gaps or 'none listed')} · {e(m.get('location_note', ''))}</div>
+</div>""")
+    return f"""<h3 style="color:#1f3a5f;margin:24px 0 4px">Other jobs screened ({len(jobs)})</h3>
+<p style="color:#666;margin:0 0 6px;font-size:13px">Below the match bar, so no tailored CV. Sorted by score.</p>
+{''.join(rows)}"""
+
+
+def build_email(date: str, packages: List[Tuple[Job, Path, List[str], str]], stats: dict,
+                others: List[Job] = ()) -> Tuple[str, str]:
     extra = stats["matches"] - len(packages)
     carry = f" ({extra} more carried over to the next run)" if extra > 0 else ""
     cards = "".join(_card(i, j, p.name, w, n) for i, (j, p, w, n) in enumerate(packages, 1))
@@ -51,12 +70,16 @@ def build_email(date: str, packages: List[Tuple[Job, Path, List[str], str]], sta
 <p style="color:#666;margin-top:0">{e(stats['region'])} · {stats['fetched']} postings found · {stats['candidates']} screened in depth · {stats['matches']} strong matches · {len(packages)} tailored CVs below{carry}.
 Each CV was tailored only from your master CV and fact-checked; please still read it before applying.</p>
 {cards}
+{_others(list(others)) if others else ""}
 <p style="color:#999;font-size:12px">Generated automatically. Nothing has been submitted on your behalf.</p>
 </body></html>"""
     text = "\n\n".join(
         f"{i}. {j.title} - {j.company} ({j.location})\nMatch: {j.match.get('score')}%\n{j.url}\nWhy: {j.match.get('why_match', '')}\nCV: {p.name}"
         for i, (j, p, _, _) in enumerate(packages, 1)
     ) or "No strong matches on this run."
+    if others:
+        text += "\n\nOther jobs screened:\n" + "\n".join(
+            f"- {j.match.get('score')}% {j.title} - {j.company} ({j.location}) {j.url}" for j in others)
     return body, text
 
 

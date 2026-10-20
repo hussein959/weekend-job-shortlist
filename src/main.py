@@ -89,11 +89,16 @@ def main() -> None:
 
     stats = {"fetched": len(raw), "candidates": len(candidates), "matches": len(all_matches),
              "region": "Jobs in Iraq only" if region == "iraq_only" else "Jobs outside Iraq"}
-    html_body, text_body = build_email(today, packages, stats)
+    others = []
+    if cfg["email"].get("include_all_screened"):
+        tailored = {j.key for j, _, _, _ in packages}
+        others = sorted((j for j in candidates if j.match and j.key not in tailored),
+                        key=lambda j: int(j.match.get("score", 0)), reverse=True)
+    html_body, text_body = build_email(today, packages, stats, others)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "shortlist.html").write_text(html_body, encoding="utf-8")
 
-    if not args.no_email and (packages or cfg["email"]["send_when_empty"]):
+    if not args.no_email and (packages or others or cfg["email"]["send_when_empty"]):
         subject = f"{cfg['email']['subject_prefix']} · {today} · {len(packages)} match{'es' if len(packages) != 1 else ''}"
         send_email(subject, html_body, text_body, [p for _, p, _, _ in packages])
         log.info("Email sent")
